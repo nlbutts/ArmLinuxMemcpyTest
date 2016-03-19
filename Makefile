@@ -1,5 +1,5 @@
-#CROSS_COMPILER=/home/nlbutts/projects/buildroot/output/host/usr/bin/arm-linux-
-CROSS_COMPILER=/opt/crystal/gateway/R2.2.0.136/platform/crystal/release/toolchain/usr/bin/arm-as-linux-gnueabi-
+CROSS_COMPILER=/home/nlbutts/projects/buildroot/output/host/usr/bin/arm-linux-
+#CROSS_COMPILER=/opt/crystal/gateway/R2.2.0.136/platform/crystal/release/toolchain/usr/bin/arm-as-linux-gnueabi-
 MM_DIR=.
 
 .PHONY: all
@@ -14,8 +14,11 @@ dump:
 
 .PHONY: install
 install: all
-	#scp $(MM_DIR)/mem_test.ko default@cryhw:/home/default
 	scp $(MM_DIR)/us_mem_test default@gw:/home/default
+
+.PHONY: install_zed
+install_zed: all
+	scp $(MM_DIR)/us_mem_test root@zed:
 
 .PHONY: kernel
 kernel:

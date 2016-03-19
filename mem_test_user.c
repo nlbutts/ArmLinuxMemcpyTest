@@ -5,7 +5,7 @@
 #include <string.h>
 #include <malloc.h>
 #include <sys/mman.h>
-#include <arm_neon.h>
+#include <unistd.h>
 
 static void * srcBuf;
 static void * dstBuf;
@@ -44,13 +44,15 @@ static int requestDmaMem()
     dstBuf = NULL;
     int rv;
 
-    //srcBuf = malloc(BUFFER_SIZE);
+#if 1
     rv = posix_memalign(&srcBuf, getpagesize(), BUFFER_SIZE);
-    //srcBuf = malloc(BUFFER_SIZE);
     printf("posix_memalign rv=%d srcBuf = %08X\n", rv, (uint32_t)srcBuf);
     rv = posix_memalign(&dstBuf, getpagesize(), BUFFER_SIZE);
-    //dstBuf = malloc(BUFFER_SIZE);
     printf("posix_memalign rv=%d dstBuf = %08X\n", rv, (uint32_t)dstBuf);
+#else
+    srcBuf = malloc(BUFFER_SIZE);
+    dstBuf = malloc(BUFFER_SIZE);
+#endif
 
     mmSrc = mmap(srcBuf, BUFFER_SIZE, PROT_NONE, MAP_ANONYMOUS, 0, 0);
     mmDst = mmap(dstBuf, BUFFER_SIZE, PROT_NONE, MAP_ANONYMOUS, 0, 0);
@@ -71,9 +73,8 @@ static int requestDmaMem()
     return 0;
 }
 
-#if 1
-extern void memcpyf(void *dst, void *src, uint32_t size);
-#else
+extern void memcpyasm(void *dst, void *src, uint32_t size);
+
 void memcpyf(void *dst, void *src, uint32_t size)
 {
     uint64_t * srcPtr = (uint64_t*)src;
@@ -82,9 +83,11 @@ void memcpyf(void *dst, void *src, uint32_t size)
     while (srcPtr < endPtr)
     {
         *(dstPtr++) = *(srcPtr++);
+        *(dstPtr++) = *(srcPtr++);
+        *(dstPtr++) = *(srcPtr++);
+        *(dstPtr++) = *(srcPtr++);
     }
 }
-#endif
 
 static void performMemoryTest(void)
 {
@@ -102,12 +105,17 @@ static void performMemoryTest(void)
     clock_gettime(CLOCK_REALTIME, &start);
     memcpy(dstBuf, srcBuf, BUFFER_SIZE);
     clock_gettime(CLOCK_REALTIME, &stop);
-    printPerformance(&start, &stop, "Copy performance from src to dst");
+    printPerformance(&start, &stop, "memcpy performance from src to dst");
 
     clock_gettime(CLOCK_REALTIME, &start);
     memcpyf(dstBuf, srcBuf, BUFFER_SIZE);
     clock_gettime(CLOCK_REALTIME, &stop);
-    printPerformance(&start, &stop, "Copy performance from src to dst");
+    printPerformance(&start, &stop, "whileloop performance from src to dst");
+
+    clock_gettime(CLOCK_REALTIME, &start);
+    memcpyasm(dstBuf, srcBuf, BUFFER_SIZE);
+    clock_gettime(CLOCK_REALTIME, &stop);
+    printPerformance(&start, &stop, "asm memcpy performance from src to dst");
 
     uint32_t * srcPtr = (uint32_t*)srcBuf;
     uint32_t * dstPtr = (uint32_t*)dstBuf;
