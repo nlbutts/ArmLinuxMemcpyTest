@@ -1,9 +1,7 @@
 .global memcpyasm
 memcpyasm:
-        push {r4, r5, r6, r7}
-.loop:  ldmia   r1!, {r4, r5, r6, r7}
-        stmia   r0!, {r4, r5, r6, r7}
-        subs r2, #16
-        bne .loop
-.done:  pop {r3, r4, r5, r6}
-        bx lr
+    PLD [r1, #0xC0]
+    VLDM r1!,{d0-d7}
+    VSTM r0!,{d0-d7}
+    SUBS r2,r2,#0x40
+    BGE memcpyasm
