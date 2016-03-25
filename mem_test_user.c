@@ -112,10 +112,13 @@ static void performMemoryTest(void)
     clock_gettime(CLOCK_REALTIME, &stop);
     printPerformance(&start, &stop, "whileloop performance from src to dst");
 
-    clock_gettime(CLOCK_REALTIME, &start);
-    memcpyasm(dstBuf, srcBuf, BUFFER_SIZE);
-    clock_gettime(CLOCK_REALTIME, &stop);
-    printPerformance(&start, &stop, "asm memcpy performance from src to dst");
+    while (1)
+    {
+        clock_gettime(CLOCK_REALTIME, &start);
+        memcpyasm(dstBuf, srcBuf, BUFFER_SIZE);
+        clock_gettime(CLOCK_REALTIME, &stop);
+        printPerformance(&start, &stop, "asm memcpy performance from src to dst");
+    }
 
     uint32_t * srcPtr = (uint32_t*)srcBuf;
     uint32_t * dstPtr = (uint32_t*)dstBuf;

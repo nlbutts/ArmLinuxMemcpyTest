@@ -5,3 +5,4 @@ memcpyasm:
     VSTM r0!,{d0-d7}
     SUBS r2,r2,#0x40
     BGE memcpyasm
+    BX LR
